@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://dpirsfefp0hu3"]
 
-[ext_resource type="Script" path="res://addons/polygon2d_tool/inspector_panel.gd" id="1_c1r8c"]
+[ext_resource type="Script" uid="uid://dia83m22q2u4f" path="res://addons/polygon2d_tool/inspector_panel.gd" id="1_c1r8c"]
 [ext_resource type="PackedScene" uid="uid://dp37y0kv4hng1" path="res://addons/polygon2d_tool/slider_spin_box.tscn" id="2_3yw2p"]
 [ext_resource type="PackedScene" uid="uid://dmv545lsv05k3" path="res://addons/polygon2d_tool/size_sync_control.tscn" id="2_kre33"]
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dp37y0kv4hng1"]
 
-[ext_resource type="Script" path="res://addons/polygon2d_tool/slider_spin_box.gd" id="1_s4l38"]
+[ext_resource type="Script" uid="uid://ciky1bd2maeyw" path="res://addons/polygon2d_tool/slider_spin_box.gd" id="1_s4l38"]
 
 [node name="SliderSpinBox" type="PanelContainer"]
 offset_right = 83.0

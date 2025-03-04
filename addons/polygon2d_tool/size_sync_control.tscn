@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dmv545lsv05k3"]
 
-[ext_resource type="Script" path="res://addons/polygon2d_tool/size_sync_control.gd" id="1_wv28y"]
+[ext_resource type="Script" uid="uid://dxgxk28nk6tuw" path="res://addons/polygon2d_tool/size_sync_control.gd" id="1_wv28y"]
 
 [node name="SizeSyncControl" type="PanelContainer"]
 script = ExtResource("1_wv28y")

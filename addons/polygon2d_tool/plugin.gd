@@ -4,7 +4,6 @@ extends EditorPlugin
 signal selected_nodes_updated(nodes: Array)
 
 var dock_panel = preload("res://addons/polygon2d_tool/inspector_panel.tscn").instantiate()
-var inspector_plugin = preload("res://addons/polygon2d_tool/inspector_plugin.gd").new()
 var is_panel_added: bool = false  # Флаг для отслеживания состояния панели
 var dock_icon = preload("icon.svg")
 
@@ -22,7 +21,6 @@ func _exit_tree():
 	if is_panel_added:
 		remove_control_from_docks(dock_panel)
 		dock_panel.queue_free()
-	remove_inspector_plugin(inspector_plugin)
 
 # Обработчик изменения выбранного объекта
 func _on_selection_changed():
@@ -40,7 +38,6 @@ func _on_selection_changed():
 	if filtered_selection.size() > 0:
 		# Добавляем панель, если она ещё не добавлена
 		if not is_panel_added:
-			add_inspector_plugin(inspector_plugin)
 			add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_BL, dock_panel)
 			# Устанавливаем иконку для вкладки панели
 			set_dock_tab_icon(dock_panel, dock_icon)

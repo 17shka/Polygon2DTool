@@ -6,7 +6,12 @@ extends Node2D
 ## Only works with Polygon2D, CollisionPolygon2D, LightOccluder2D
 @export var target: Array[Node2D] = []:
 	set = set_target
-@export var size := Vector2(64, 64): set = set_size
+
+@export_custom(PROPERTY_HINT_LINK, "") var size: Vector2 = Vector2(64, 64):
+	set(new_size):
+		if size != new_size:
+			size = new_size
+			update_polygon()
 @export_range(3, 128) var sides: int = 32: set = set_sides
 @export_range(0.0, 360.0) var angle_degrees: float = 360: set = set_angle_degrees
 @export_range(0.1, 100) var ratio: float = 100: set = set_ratio
@@ -15,10 +20,6 @@ extends Node2D
 
 func set_target(new_target: Array) -> void:
 	target = new_target
-	update_polygon()
-
-func set_size(p_size: Vector2) -> void:
-	size = p_size
 	update_polygon()
 
 func set_sides(p_sides: int) -> void:

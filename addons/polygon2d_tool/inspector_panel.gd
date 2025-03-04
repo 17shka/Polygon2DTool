@@ -11,7 +11,6 @@ var rotate: float = 360
 
 func update_selected_nodes(nodes: Array) -> void:
 	selected_nodes = nodes
-	update_polygon()
 func _on_size_values_changed(value: Vector2) -> void:
 	p_size = value
 	update_polygon()
