@@ -1,5 +1,5 @@
 @tool
-extends PanelContainer
+extends HBoxContainer
 
 @onready var sync: CheckBox = $HBoxContainer/Sync
 @onready var x: SpinBox = $HBoxContainer/VBoxContainer/X

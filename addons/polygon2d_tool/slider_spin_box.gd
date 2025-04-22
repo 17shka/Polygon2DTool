@@ -1,5 +1,5 @@
 @tool
-extends PanelContainer
+extends HBoxContainer
 
 @onready var spin_box: SpinBox = $VBoxContainer/SpinBox
 @onready var h_slider: HSlider = $VBoxContainer/HSlider

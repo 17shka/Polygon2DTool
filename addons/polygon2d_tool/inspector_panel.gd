@@ -39,6 +39,8 @@ func update_polygon():
 func update_target_polygon(target_item: Node2D, points: Array) -> void:
 	if target_item is Polygon2D or target_item is CollisionPolygon2D:
 		target_item.polygon = points
+		if target_item is Polygon2DPlus:
+			target_item._update_stroke()
 	elif target_item is LightOccluder2D:
 		if not target_item.occluder:
 			target_item.occluder = OccluderPolygon2D.new()
@@ -65,7 +67,10 @@ func generate_polygon_points(p_size: Vector2, p_sides: int, p_ratio: float, p_an
 	var angle_step = deg_to_rad(p_angle_degrees) / p_sides  # Учитываем angle_degrees
 	var rotation_rad = deg_to_rad(rotate)  # Преобразуем угол поворота в радианы
 
-	for i in range(p_sides + 1):  # +1 чтобы замкнуть полигон
+	if angle_degrees != 360 or internal_margin != 0:
+		p_sides += 1  # +1 чтобы замкнуть полигон
+
+	for i in range(p_sides):
 		var angle = i * angle_step + rotation_rad  # Добавляем угол поворота
 		var point = Vector2(cos(angle), sin(angle)) * p_size
 		points.append(point)
