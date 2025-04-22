@@ -4,7 +4,6 @@ extends HBoxContainer
 @onready var spin_box: SpinBox = $VBoxContainer/SpinBox
 @onready var h_slider: HSlider = $VBoxContainer/HSlider
 
-# Объявляем кастомный сигнал
 signal value_changed(value: float)
 
 func _on_spin_box_value_changed(value: float) -> void:

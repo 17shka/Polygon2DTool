@@ -56,35 +56,37 @@ func update_target_polygon(target_item: Node2D, points: Array) -> void:
 
 func get_points() -> Array:
 	var points = generate_polygon_points(size, sides, ratio, angle_degrees)
-	
+
 	if internal_margin > 0:
 		var inner_size = size * (internal_margin / 100)
-		var inner_points = generate_polygon_points(inner_size, sides, ratio, angle_degrees)
+		var inner_ratio = ratio
+		var inner_points = generate_polygon_points(inner_size, sides, inner_ratio, angle_degrees)
 		inner_points.reverse()
 		points.append_array(inner_points)
-	
+
 	elif angle_degrees != 360:
 		points.append(Vector2.ZERO)
-	
+
 	return points
 
 func generate_polygon_points(p_size: Vector2, p_sides: int, p_ratio: float, p_angle_degrees: float) -> Array:
 	var points = []
 	var angle_step = deg_to_rad(p_angle_degrees) / p_sides
 	var rotation_rad = deg_to_rad(rotate)
-	
-	if angle_degrees != 360 or internal_margin != 0:
-		p_sides += 1
-	
-	for i in range(p_sides):
+
+	var count = p_sides + 1
+
+	for i in range(count):
 		var angle = i * angle_step + rotation_rad
 		var point = Vector2(cos(angle), sin(angle)) * p_size
 		points.append(point)
 
-		if p_ratio < 100 and i < p_sides:
+		if p_ratio < 100 and i < count - 1:
 			var next_angle = (i + 1) * angle_step + rotation_rad
-			var mid_point = (Vector2(cos(angle), sin(angle)) + Vector2(cos(next_angle), sin(next_angle)))
-			mid_point = mid_point * (p_size * 0.5) * (p_ratio / 100)
+			var dir1 = Vector2(cos(angle), sin(angle))
+			var dir2 = Vector2(cos(next_angle), sin(next_angle))
+			var mid_point = (dir1 + dir2) * 0.5 * (p_ratio / 100.0)
+			mid_point *= p_size
 			points.append(mid_point)
 	
 	return points
