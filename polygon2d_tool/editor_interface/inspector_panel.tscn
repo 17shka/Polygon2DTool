@@ -1,0 +1,169 @@
+[gd_scene load_steps=7 format=3 uid="uid://dpirsfefp0hu3"]
+
+[ext_resource type="Script" uid="uid://dia83m22q2u4f" path="res://addons/polygon2d_tool/editor_interface/inspector_panel.gd" id="1_c1r8c"]
+[ext_resource type="PackedScene" uid="uid://dp37y0kv4hng1" path="res://addons/polygon2d_tool/editor_interface/slider_spin_box.tscn" id="2_3yw2p"]
+[ext_resource type="PackedScene" uid="uid://dmv545lsv05k3" path="res://addons/polygon2d_tool/editor_interface/size_sync_control.tscn" id="2_kre33"]
+[ext_resource type="Script" uid="uid://dp10a6ixffduw" path="res://addons/polygon2d_tool/editor_interface/reset_button.gd" id="3_eg1cf"]
+
+[sub_resource type="FontVariation" id="FontVariation_frw4r"]
+spacing_top = -6
+spacing_bottom = -3
+
+[sub_resource type="Theme" id="Theme_vljuo"]
+Button/fonts/font = SubResource("FontVariation_frw4r")
+HBoxContainer/constants/separation = 0
+VBoxContainer/constants/separation = 0
+
+[node name="Polygon2DTool" type="PanelContainer"]
+offset_right = 280.0
+offset_bottom = 320.0
+theme = SubResource("Theme_vljuo")
+script = ExtResource("1_c1r8c")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Size"
+
+[node name="Size" parent="ScrollContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_kre33")]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sides"
+
+[node name="ResetButton" type="Button" parent="ScrollContainer/VBoxContainer/HBoxContainer2" node_paths=PackedStringArray("target_buttons")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "⟲"
+script = ExtResource("3_eg1cf")
+target_buttons = [NodePath("../Sides")]
+metadata/_custom_type_script = "uid://dp10a6ixffduw"
+
+[node name="Sides" type="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+min_value = 3.0
+max_value = 16384.0
+value = 32.0
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Angle degrees"
+
+[node name="AngleDegrees" parent="ScrollContainer/VBoxContainer/HBoxContainer3" instance=ExtResource("2_3yw2p")]
+layout_mode = 2
+
+[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees" index="0"]
+visible = false
+
+[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees/VBoxContainer" index="0"]
+max_value = 360.0
+step = 0.1
+value = 360.0
+
+[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees/VBoxContainer" index="1"]
+max_value = 360.0
+step = 0.1
+value = 360.0
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ratio
+"
+
+[node name="Ratio" parent="ScrollContainer/VBoxContainer/HBoxContainer4" instance=ExtResource("2_3yw2p")]
+layout_mode = 2
+
+[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio" index="0"]
+visible = false
+
+[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio/VBoxContainer" index="0"]
+step = 0.1
+value = 100.0
+
+[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio/VBoxContainer" index="1"]
+step = 0.1
+value = 100.0
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer5"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Internal margin"
+
+[node name="InternalMargin" parent="ScrollContainer/VBoxContainer/HBoxContainer5" instance=ExtResource("2_3yw2p")]
+layout_mode = 2
+
+[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin" index="0"]
+visible = false
+
+[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin/VBoxContainer" index="0"]
+max_value = 99.9
+step = 0.1
+
+[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin/VBoxContainer" index="1"]
+max_value = 99.9
+step = 0.1
+
+[node name="HBoxContainer6" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer6"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rotate"
+
+[node name="Rotate" parent="ScrollContainer/VBoxContainer/HBoxContainer6" instance=ExtResource("2_3yw2p")]
+layout_mode = 2
+
+[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate" index="0"]
+visible = false
+
+[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate/VBoxContainer" index="0"]
+max_value = 360.0
+step = 0.1
+
+[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate/VBoxContainer" index="1"]
+max_value = 360.0
+step = 0.1
+
+[connection signal="values_changed" from="ScrollContainer/VBoxContainer/HBoxContainer/Size" to="." method="_on_size_values_changed"]
+[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer2/Sides" to="." method="_on_sides_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees" to="." method="_on_angle_degrees_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio" to="." method="_on_ratio_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin" to="." method="_on_internal_margin_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate" to="." method="_on_rotate_value_changed"]
+
+[editable path="ScrollContainer/VBoxContainer/HBoxContainer/Size"]
+[editable path="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees"]
+[editable path="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio"]
+[editable path="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin"]
+[editable path="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate"]
