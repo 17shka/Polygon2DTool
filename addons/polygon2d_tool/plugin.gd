@@ -3,7 +3,7 @@ extends EditorPlugin
 
 signal selected_nodes_updated(nodes: Array)
 
-var dock_panel = preload("res://addons/polygon2d_tool/inspector_panel.tscn").instantiate()
+var dock_panel = preload("res://addons/polygon2d_tool/editor_interface/inspector_panel.tscn").instantiate()
 var is_panel_added: bool = false  # Флаг для отслеживания состояния панели
 var dock_icon = preload("icon.svg")
 
