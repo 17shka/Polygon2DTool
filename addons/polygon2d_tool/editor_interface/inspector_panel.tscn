@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://dpirsfefp0hu3"]
+[gd_scene load_steps=15 format=3 uid="uid://dpirsfefp0hu3"]
 
 [ext_resource type="Script" uid="uid://dia83m22q2u4f" path="res://addons/polygon2d_tool/editor_interface/inspector_panel.gd" id="1_c1r8c"]
-[ext_resource type="PackedScene" uid="uid://dp37y0kv4hng1" path="res://addons/polygon2d_tool/editor_interface/slider_spin_box.tscn" id="2_3yw2p"]
-[ext_resource type="PackedScene" uid="uid://dmv545lsv05k3" path="res://addons/polygon2d_tool/editor_interface/size_sync_control.tscn" id="2_kre33"]
-[ext_resource type="Script" uid="uid://dp10a6ixffduw" path="res://addons/polygon2d_tool/editor_interface/reset_button.gd" id="3_eg1cf"]
+[ext_resource type="PackedScene" uid="uid://djtt2db3jk3ob" path="res://addons/polygon2d_tool/editor_interface/inspector_setting.tscn" id="2_olcuk"]
+[ext_resource type="Script" uid="uid://bl4x3pamvmaag" path="res://addons/polygon2d_tool/editor_interface/arity.gd" id="3_hr0kh"]
 
 [sub_resource type="FontVariation" id="FontVariation_frw4r"]
 spacing_top = -6
@@ -14,9 +13,64 @@ Button/fonts/font = SubResource("FontVariation_frw4r")
 HBoxContainer/constants/separation = 0
 VBoxContainer/constants/separation = 0
 
+[sub_resource type="Resource" id="Resource_qaxcf"]
+script = ExtResource("3_hr0kh")
+prefix = "x"
+max_value = 16384.0
+step = 0.1
+default_value = 64.0
+
+[sub_resource type="Resource" id="Resource_c68i2"]
+script = ExtResource("3_hr0kh")
+prefix = "y"
+max_value = 16384.0
+step = 0.1
+default_value = 64.0
+
+[sub_resource type="Resource" id="Resource_g5qcs"]
+script = ExtResource("3_hr0kh")
+min_value = 3.0
+max_value = 128.0
+default_value = 32.0
+
+[sub_resource type="Resource" id="Resource_8eqte"]
+script = ExtResource("3_hr0kh")
+min_value = 3.0
+max_value = 128.0
+default_value = 16.0
+
+[sub_resource type="Resource" id="Resource_qk53v"]
+script = ExtResource("3_hr0kh")
+step = 0.1
+default_value = 100.0
+
+[sub_resource type="Resource" id="Resource_olcuk"]
+script = ExtResource("3_hr0kh")
+step = 0.1
+default_value = 100.0
+
+[sub_resource type="Resource" id="Resource_pa0cj"]
+script = ExtResource("3_hr0kh")
+suffix = "°"
+max_value = 360.0
+step = 0.1
+
+[sub_resource type="Resource" id="Resource_tspvm"]
+script = ExtResource("3_hr0kh")
+suffix = "°"
+max_value = 360.0
+step = 0.1
+default_value = 360.0
+
+[sub_resource type="Resource" id="Resource_bvrq5"]
+script = ExtResource("3_hr0kh")
+step = 0.1
+
 [node name="Polygon2DTool" type="PanelContainer"]
-offset_right = 280.0
-offset_bottom = 320.0
+offset_right = 462.0
+offset_bottom = 393.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme = SubResource("Theme_vljuo")
 script = ExtResource("1_c1r8c")
 
@@ -24,146 +78,106 @@ script = ExtResource("1_c1r8c")
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="ToolButtons" type="HBoxContainer" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer"]
+[node name="Update" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer/ToolButtons"]
 layout_mode = 2
 size_flags_horizontal = 3
+text = "Update"
+
+[node name="Copy" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer/ToolButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Copy"
+
+[node name="Paste" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer/ToolButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Paste"
+
+[node name="HSeparator" type="HSeparator" parent="ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Size" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
+layout_mode = 2
 text = "Size"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_qaxcf"), SubResource("Resource_c68i2")])
 
-[node name="Size" parent="ScrollContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_kre33")]
+[node name="OuterSides" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
 layout_mode = 2
+text = "Outer sides"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_g5qcs")])
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer2"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Sides"
-
-[node name="ResetButton" type="Button" parent="ScrollContainer/VBoxContainer/HBoxContainer2" node_paths=PackedStringArray("target_buttons")]
+[node name="InterSides" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-text = "⟲"
-script = ExtResource("3_eg1cf")
-target_buttons = [NodePath("../Sides")]
-metadata/_custom_type_script = "uid://dp10a6ixffduw"
+text = "Inter sides"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_8eqte")])
 
-[node name="Sides" type="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer2"]
+[node name="OuterRatio" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
 layout_mode = 2
-min_value = 3.0
-max_value = 16384.0
-value = 32.0
+text = "Outer ratio"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_qk53v")])
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer3"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Angle degrees"
-
-[node name="AngleDegrees" parent="ScrollContainer/VBoxContainer/HBoxContainer3" instance=ExtResource("2_3yw2p")]
-layout_mode = 2
-
-[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees" index="0"]
+[node name="InterRatio" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
+unique_name_in_owner = true
 visible = false
+layout_mode = 2
+text = "Inter ratio"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_olcuk")])
 
-[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees/VBoxContainer" index="0"]
-max_value = 360.0
-step = 0.1
-value = 360.0
-
-[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees/VBoxContainer" index="1"]
-max_value = 360.0
-step = 0.1
-value = 360.0
-
-[node name="HBoxContainer4" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer4"]
+[node name="Rotate" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Ratio
-"
-
-[node name="Ratio" parent="ScrollContainer/VBoxContainer/HBoxContainer4" instance=ExtResource("2_3yw2p")]
-layout_mode = 2
-
-[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio" index="0"]
-visible = false
-
-[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio/VBoxContainer" index="0"]
-step = 0.1
-value = 100.0
-
-[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio/VBoxContainer" index="1"]
-step = 0.1
-value = 100.0
-
-[node name="HBoxContainer5" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer5"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Internal margin"
-
-[node name="InternalMargin" parent="ScrollContainer/VBoxContainer/HBoxContainer5" instance=ExtResource("2_3yw2p")]
-layout_mode = 2
-
-[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin" index="0"]
-visible = false
-
-[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin/VBoxContainer" index="0"]
-max_value = 99.9
-step = 0.1
-
-[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin/VBoxContainer" index="1"]
-max_value = 99.9
-step = 0.1
-
-[node name="HBoxContainer6" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/HBoxContainer6"]
-layout_mode = 2
-size_flags_horizontal = 3
 text = "Rotate"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_pa0cj")])
 
-[node name="Rotate" parent="ScrollContainer/VBoxContainer/HBoxContainer6" instance=ExtResource("2_3yw2p")]
+[node name="AngleDegrees" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
+layout_mode = 2
+text = "Angle degrees"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_tspvm")])
+
+[node name="HSeparator3" type="HSeparator" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="ResetButton" parent="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate" index="0"]
-visible = false
+[node name="InternalMargin" parent="ScrollContainer/MarginContainer/VBoxContainer" instance=ExtResource("2_olcuk")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Internal margin"
+arity = Array[ExtResource("3_hr0kh")]([SubResource("Resource_bvrq5")])
 
-[node name="SpinBox" parent="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate/VBoxContainer" index="0"]
-max_value = 360.0
-step = 0.1
+[node name="CustomInter" type="CheckButton" parent="ScrollContainer/MarginContainer/VBoxContainer/InternalMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
 
-[node name="HSlider" parent="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate/VBoxContainer" index="1"]
-max_value = 360.0
-step = 0.1
-
-[connection signal="values_changed" from="ScrollContainer/VBoxContainer/HBoxContainer/Size" to="." method="_on_size_values_changed"]
-[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer2/Sides" to="." method="_on_sides_value_changed"]
-[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees" to="." method="_on_angle_degrees_value_changed"]
-[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio" to="." method="_on_ratio_value_changed"]
-[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin" to="." method="_on_internal_margin_value_changed"]
-[connection signal="value_changed" from="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate" to="." method="_on_rotate_value_changed"]
-
-[editable path="ScrollContainer/VBoxContainer/HBoxContainer/Size"]
-[editable path="ScrollContainer/VBoxContainer/HBoxContainer3/AngleDegrees"]
-[editable path="ScrollContainer/VBoxContainer/HBoxContainer4/Ratio"]
-[editable path="ScrollContainer/VBoxContainer/HBoxContainer5/InternalMargin"]
-[editable path="ScrollContainer/VBoxContainer/HBoxContainer6/Rotate"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/VBoxContainer/ToolButtons/Update" to="." method="_on_update_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/VBoxContainer/ToolButtons/Copy" to="." method="_on_copy_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/VBoxContainer/ToolButtons/Paste" to="." method="_on_paste_pressed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/Size" to="." method="_on_size_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/OuterSides" to="." method="_on_outer_sides_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/InterSides" to="." method="_on_inter_sides_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/OuterRatio" to="." method="_on_outer_ratio_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/InterRatio" to="." method="_on_inter_ratio_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/Rotate" to="." method="_on_rotate_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/AngleDegrees" to="." method="_on_angle_degrees_value_changed"]
+[connection signal="value_changed" from="ScrollContainer/MarginContainer/VBoxContainer/InternalMargin" to="." method="_on_internal_margin_value_changed"]
+[connection signal="toggled" from="ScrollContainer/MarginContainer/VBoxContainer/InternalMargin/CustomInter" to="." method="_on_custom_inter_toggled"]
