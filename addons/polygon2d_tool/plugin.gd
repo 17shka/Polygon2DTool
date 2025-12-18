@@ -1,41 +1,55 @@
 @tool
 extends EditorPlugin
 
-signal selected_nodes_updated(nodes: Array)
+const SCRIPT = preload("uid://bd6ou7yl33fbn")
+const ICON = preload("icon.svg")
+var tool_instance = SCRIPT.new()
 
-var dock_panel = preload("uid://dpirsfefp0hu3").instantiate()
-var dock_icon = preload("uid://b0klot3vkuag6")
-var is_panel_added := false 
+var dock: EditorDock
 
-func _enter_tree():
-	get_editor_interface().get_selection().connect("selection_changed", Callable(self, "_on_selection_changed"))
+func _enter_tree() -> void:
+	EditorInterface.get_selection().selection_changed.connect(_on_selection_changed)
 	_on_selection_changed()
 
-	if dock_panel.has_method("update_selected_nodes"):
-		selected_nodes_updated.connect(dock_panel.update_selected_nodes)
 
-func _exit_tree():
-	if is_panel_added:
-		remove_control_from_docks(dock_panel)
-		dock_panel.queue_free()
+func _exit_tree() -> void:
+	EditorInterface.get_selection().selection_changed.disconnect(_on_selection_changed)
+	remove()
 
-func _on_selection_changed():
-	var selection : Array[Node] = get_editor_interface().get_selection().get_selected_nodes()
-	var allowed_types := [ "Polygon2D", "CollisionPolygon2D", "LightOccluder2D", "Line2D", "Path2D"]
-	
-	var filtered_selection := []
+
+func add() -> void:
+	if not dock:
+		dock = EditorDock.new()
+		dock.default_slot = EditorPlugin.DOCK_SLOT_RIGHT_BL
+		dock.title = "Polygon2DTool"
+		dock.dock_icon = ICON
+
+		var panel := VBoxContainer.new()
+		var sub_inspector:= EditorInspector.new()
+		sub_inspector.edit(tool_instance)
+		sub_inspector.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		panel.add_child(sub_inspector)
+
+		dock.add_child(panel)
+
+		add_dock(dock)
+
+
+func remove() -> void:
+	if dock:
+		remove_dock(dock)
+		dock.queue_free()
+		dock = null
+
+
+func _on_selection_changed() -> void:
+	var selection := EditorInterface.get_selection().get_selected_nodes()
+	var target: Array[Node2D]
 	for node in selection:
-		if node.get_class() in allowed_types:
-			filtered_selection.append(node)
-
-	emit_signal("selected_nodes_updated", filtered_selection)
-	
-	if filtered_selection.size() > 0:
-		if not is_panel_added:
-			add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_BL, dock_panel)
-			set_dock_tab_icon(dock_panel, dock_icon)
-			is_panel_added = true
+		if PolygonTool2D.is_supported(node):
+			target.append(node)
+	if target:
+		tool_instance.target = target
+		add()
 	else:
-		if is_panel_added:
-			remove_control_from_docks(dock_panel)
-			is_panel_added = false
+		remove()

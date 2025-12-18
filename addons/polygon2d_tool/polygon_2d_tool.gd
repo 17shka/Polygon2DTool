@@ -1,130 +1,307 @@
-
-@icon("uid://b0klot3vkuag6")
+@icon("icon.svg")
 @tool
-class_name PolygonTool
-extends Node2D
+class_name PolygonTool2D
 
-@export_tool_button("Update") var update_action = update
+@export_tool_button("Update", "Reload") var update_action: Callable = update
 
-## Only works with Polygon2D, CollisionPolygon2D, LightOccluder2D, Line2D, Path2D
-@export var target: Array[Node2D] = []:
+var target: Array[Node2D] = []
+
+enum Type {POLYGON, RECTANGLE}
+@export var type: Type = Type.RECTANGLE:
 	set(value):
-		target = value
+		type = value
+		notify_property_list_changed()
 		update()
-@export_custom(PROPERTY_HINT_LINK, "") var size: Vector2 = Vector2(64, 64):
-	set(new_size):
-		if size != new_size:
-			size = new_size
-			update()
-@export_range(3, 128) var outer_sides: int = 32:
+
+@export_custom(PROPERTY_HINT_LINK, "suffix:px") var size: Vector2 = Vector2(64, 64):
 	set(value):
-		outer_sides = value
+		size = value
 		update()
-@export_range(0.1, 100) var outer_ratio: float = 100:
+
+@export_range(3, 128, 1, "or_greater") var sides: int = 3:
 	set(value):
-		if value < internal_margin:
-			internal_margin = value - 0.001
-		outer_ratio = value
+		sides = value
 		update()
-@export_range(0.0, 360.0, 0.1, "suffix:°") var rotate: float = 0.0:
-	set(value):
-		rotate = value
-		update()
-@export_range(1.0, 360.0, 0.1, "suffix:°") var angle_degrees: float = 360:
+
+@export_range(0.1, 360.0, 0.1) var angle_degrees: float = 360.0:
 	set(value):
 		angle_degrees = value
 		update()
-@export_range(0.0, 99.9) var internal_margin: float:
+
+@export_range(0.1, 100, 0.1, "suffix:%") var ratio: float = 100.0:
 	set(value):
-		if value > outer_ratio:
-			outer_ratio = value + 0.001
+		ratio = value
+		update()
+
+@export_range(0.0, 360.0, 0.1, "or_less", "or_greater", "radians_as_degrees") var rotate: float = 0.0:
+	set(value):
+		rotate = value
+		update()
+
+@export_subgroup("Rounding")
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var enable_rounding: bool = false:
+	set(value):
+		enable_rounding = value
+		update()
+
+@export_range(0, 64, 0.1, "or_greater") var rounding: float = 12:
+	set(value):
+		rounding = value
+		update()
+
+@export_range(2, 64, 1, "or_greater") var rounding_quality: int = 8:
+	set(value):
+		rounding_quality = value
+		update()
+
+@export_group("Internal")
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var enable_internal: bool = false:
+	set(value):
+		enable_internal = value
+		update()
+
+@export_range(0.0, 99.9, 0.1, "suffix:%") var internal_margin: float = 25:
+	set(value):
 		internal_margin = value
 		update()
-@export_range(3, 128) var inter_sides: int = 32:
+
+@export var sync_internal_params: bool = true:
 	set(value):
-		inter_sides = value
+		sync_internal_params = value
+		notify_property_list_changed()
 		update()
-@export_range(0.1, 100) var inter_ratio: float = 100:
+
+@export var auto_params: bool = false:
 	set(value):
-		inter_ratio = value
+		auto_params = value
+		notify_property_list_changed()
 		update()
-func _ready() -> void:
-	update()
+
+@export_range(3, 128, 1, "or_greater") var internal_sides: int = 3:
+	set(value):
+		internal_sides = value
+		update()
+
+@export_range(0.1, 100, 0.1, "suffix:%") var internal_ratio: float = 100.0:
+	set(value):
+		internal_ratio = value
+		update()
+
+@export_range(0.0, 360.0, 0.1, "or_less", "or_greater", "radians_as_degrees") var internal_rotate: float = 0.0:
+	set(value):
+		internal_rotate = value
+		update()
+
+@export_subgroup("Internal rounding")
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var enable_internal_rounding: bool = false:
+	set(value):
+		enable_internal_rounding = value
+		update()
+
+@export_range(0, 64, 0.1, "or_greater") var internal_rounding: float = 12:
+	set(value):
+		internal_rounding = value
+		update()
+
+@export_range(2, 64, 1, "or_greater") var internal_rounding_quality: int = 8:
+	set(value):
+		internal_rounding_quality = value
+		update()
+
+
+func _validate_property(property: Dictionary) -> void:
+	if type == Type.RECTANGLE:
+		if property.name in ["sides", "angle_degrees", "ratio", "internal_sides", "internal_ratio"]:
+			property.usage = PROPERTY_USAGE_NO_EDITOR
+	
+	if (sync_internal_params or auto_params) and property.name == "internal_sides":
+		property.usage = PROPERTY_USAGE_NO_EDITOR
+	if sync_internal_params and property.name in ["internal_ratio", "internal_rotate", "internal_rounding_quality"]:
+		property.usage = PROPERTY_USAGE_NO_EDITOR
+	if auto_params and property.name in ["internal_rounding", "internal_rounding_quality"]:
+		property.usage = PROPERTY_USAGE_NO_EDITOR
+
 
 func update() -> void:
-	var polygon = create_polygon(size, outer_sides, outer_ratio, rotate, angle_degrees, internal_margin, inter_sides, inter_ratio)
-	update_polygon(target, polygon)
+	var margin_factor: float = internal_margin / 100.0
+	var actual_int_rot: float = rotate if sync_internal_params else internal_rotate
+	
+	var r_ext: float = rounding if enable_rounding else 0.0
+	var r_int: float = 0.0
+	var q_int: int = internal_rounding_quality
+	
+	if enable_internal_rounding:
+		if auto_params:
+			r_int = r_ext * margin_factor
+			q_int = max(2, int(rounding_quality * margin_factor))
+		elif sync_internal_params:
+			r_int = r_ext
+			q_int = rounding_quality
+		else:
+			r_int = internal_rounding
+	
+	# Расчет сторон
+	var actual_int_sides: int = internal_sides
+	if auto_params:
+		actual_int_sides = max(3, int(sides * margin_factor))
+	elif sync_internal_params:
+		actual_int_sides = sides
+		
+	var actual_int_ratio: float = ratio if sync_internal_params else internal_ratio
+	
+	var points: PackedVector2Array
+	if type == Type.RECTANGLE:
+		points = create_rectangle_complex(size, rotate, actual_int_rot, r_ext, rounding_quality, internal_margin, r_int, q_int, enable_internal)
+	else:
+		points = create_polygon(size, sides, actual_int_sides, angle_degrees, ratio, actual_int_ratio, internal_margin, rotate, actual_int_rot, r_ext, rounding_quality, r_int, q_int, enable_internal)
+	update_polygon(target, points)
 
-static func update_polygon(targets: Array, points: Array):
+
+static func bridge_polygons(p_ext: PackedVector2Array, p_int: PackedVector2Array) -> PackedVector2Array:
+	if p_ext.is_empty() or p_int.is_empty(): return p_ext
+	var first_pass_idx: int = 0
+	var min_dist_1: float = INF
+	for i in range(p_int.size()):
+		var d: float = p_ext[0].distance_squared_to(p_int[i])
+		if d < min_dist_1:
+			min_dist_1 = d
+			first_pass_idx = i
+	
+	var best_ext_idx: int = 0
+	var min_dist_2: float = INF
+	var target_int_p: Vector2 = p_int[first_pass_idx]
+	for i in range(p_ext.size()):
+		var d: float = target_int_p.distance_squared_to(p_ext[i])
+		if d < min_dist_2:
+			min_dist_2 = d
+			best_ext_idx = i
+	
+	var res: PackedVector2Array = []
+	for i in range(p_ext.size()):
+		res.append(p_ext[(best_ext_idx + i) % p_ext.size()])
+	res.append(p_ext[best_ext_idx]) 
+	for i in range(p_int.size()):
+		res.append(p_int[(first_pass_idx + i) % p_int.size()])
+	res.append(p_int[first_pass_idx])
+	return res
+
+
+static func create_rectangle_complex(p_size: Vector2, p_rotate: float, p_int_rotate: float, p_rounding: float, p_quality: int, p_margin: float, p_int_rounding: float, p_int_quality: int, p_use_internal: bool) -> PackedVector2Array:
+	var half: Vector2 = p_size / 2.0
+	var ext_raw: PackedVector2Array = [Vector2(-half.x, -half.y), Vector2(half.x, -half.y), Vector2(half.x, half.y), Vector2(-half.x, half.y)]
+	var ext_rounded: PackedVector2Array = apply_rounding(ext_raw, p_rounding, p_quality, true)
+	for i in range(ext_rounded.size()): ext_rounded[i] = ext_rounded[i].rotated(p_rotate)
+	
+	if p_use_internal and p_margin > 0:
+		var i_half: Vector2 = half * (p_margin / 100.0)
+		var int_raw: PackedVector2Array = [Vector2(-i_half.x, -i_half.y), Vector2(i_half.x, -i_half.y), Vector2(i_half.x, i_half.y), Vector2(-i_half.x, i_half.y)]
+		int_raw.reverse()
+		var int_rounded: PackedVector2Array = apply_rounding(int_raw, p_int_rounding, p_int_quality, true)
+		for i in range(int_rounded.size()): int_rounded[i] = int_rounded[i].rotated(p_int_rotate)
+		return bridge_polygons(ext_rounded, int_rounded)
+	return ext_rounded
+
+
+static func create_polygon(p_size: Vector2, p_ext_sides: int, p_int_sides: int, p_angle: float, p_ratio: float, p_int_ratio: float, p_margin: float, p_rotate: float, p_int_rotate: float, p_rounding: float, p_quality: int, p_int_rounding: float, p_int_quality: int, p_use_internal: bool) -> PackedVector2Array:
+	var is_closed: bool = p_angle >= 360.0
+	var ext_raw: PackedVector2Array = create_raw_points(p_size, p_ext_sides, p_ratio, p_angle, p_rotate)
+	var ext_rounded: PackedVector2Array = apply_rounding(ext_raw, p_rounding, p_quality, is_closed)
+	
+	if p_use_internal and p_margin > 0:
+		var int_raw: PackedVector2Array = create_raw_points(p_size * (p_margin / 100.0), p_int_sides, p_int_ratio, p_angle, p_int_rotate)
+		int_raw.reverse()
+		var int_rounded: PackedVector2Array = apply_rounding(int_raw, p_int_rounding, p_int_quality, is_closed)
+		if is_closed: return bridge_polygons(ext_rounded, int_rounded)
+		var combined: PackedVector2Array = ext_rounded
+		combined.append_array(int_rounded)
+		return combined
+	elif not is_closed:
+		ext_rounded.append(Vector2.ZERO)
+	return ext_rounded
+
+
+static func create_raw_points(p_size: Vector2, p_sides: int, p_ratio: float, p_angle: float, p_rotate: float) -> PackedVector2Array:
+	var pts: PackedVector2Array = []
+	var step: float = deg_to_rad(p_angle) / p_sides
+	var offset: float = -PI/2.0
+	var count: int = p_sides + 1 if p_angle < 360.0 else p_sides
+	for i in range(count):
+		var a: float = i * step + p_rotate + offset
+		pts.append(Vector2(cos(a), sin(a)) * p_size)
+		if p_ratio < 100.0 and i < p_sides:
+			var ma: float = (i + 0.5) * step + p_rotate + offset
+			pts.append(Vector2(cos(ma), sin(ma)) * p_size * (p_ratio / 100.0))
+	return pts
+
+
+static func apply_rounding(p_points: PackedVector2Array, p_radius: float, p_quality: int, p_closed: bool) -> PackedVector2Array:
+	if p_radius <= 0 or p_points.size() < 3: return p_points
+	var result: PackedVector2Array = []
+	var l: int = p_points.size()
+	for i in range(l):
+		var p2: Vector2 = p_points[i]
+		if not p_closed and (i == 0 or i == l - 1):
+			result.append(p2)
+			continue
+		var p1: Vector2 = p_points[(i - 1 + l) % l]
+		var p3: Vector2 = p_points[(i + 1) % l]
+		var v1: Vector2 = (p1 - p2).normalized()
+		var v2: Vector2 = (p3 - p2).normalized()
+		var angle: float = v1.angle_to(v2)
+		if abs(angle) < 0.001 or abs(abs(angle) - PI) < 0.001:
+			result.append(p2)
+			continue
+		var half_angle: float = abs(angle) / 2.0
+		var max_dist: float = min(p2.distance_to(p1), p2.distance_to(p3)) * 0.49
+		var actual_radius: float = min(p_radius, max_dist * tan(half_angle))
+		var needed_dist: float = actual_radius / tan(half_angle)
+		var center: Vector2 = p2 + (v1 + v2).normalized() * (actual_radius / sin(half_angle))
+		var start_a: float = (p2 + v1 * needed_dist - center).angle()
+		var end_a: float = (p2 + v2 * needed_dist - center).angle()
+		var diff: float = fposmod(end_a - start_a + PI, TAU) - PI
+		for j in range(p_quality + 1):
+			var a: float = start_a + diff * (float(j) / p_quality)
+			result.append(center + Vector2(cos(a), sin(a)) * actual_radius)
+	return result
+
+
+static func update_polygon(targets: Array[Node2D], points: PackedVector2Array) -> void:
 	for node in targets:
 		if node is Polygon2D or node is CollisionPolygon2D:
 			node.polygon = points
+		elif node is CollisionShape2D:
+			if not node.shape:
+				node.shape = ConvexPolygonShape2D.new()
+			if node.shape is ConvexPolygonShape2D:
+				node.shape.points = points
 		elif node is LightOccluder2D:
 			if not node.occluder:
 				node.occluder = OccluderPolygon2D.new()
 			node.occluder.polygon = points
+		elif node is Line2D:
+			node.points = points
 		elif node is Path2D:
 			node.curve = Curve2D.new()
 			for i in points.size():
 				node.curve.add_point(points[i])
+			if points.size() > 0:
+				node.curve.add_point(points[0])
+		elif node is NavigationObstacle2D:
+			node.vertices = points
+		elif node is CPUParticles2D:
+			node.emission_points = points
+		elif node is NavigationRegion2D:
+			if not node.navigation_polygon:
+				node.navigation_polygon = NavigationPolygon.new()
+			if node.navigation_polygon.get_outline_count():
+				node.navigation_polygon.set_outline(0, points)
+			else:
+				node.navigation_polygon.add_outline(points)
 
-static func create_polygon(
-	p_size: Vector2,
-	p_outer_sides: int,
-	p_outer_ratio: float = 100,
-	p_rotate: float = 0,
-	p_angle_degrees: float = 360,
-	p_internal_margin: float = 0,
-	p_inner_sides: int = p_outer_sides,
-	p_inner_ratio: float = p_outer_ratio
-) -> Array:
-	
-	var points = create_points(p_size, p_outer_sides, p_outer_ratio, p_rotate, p_angle_degrees)
 
-	if p_internal_margin > 0:
-		var inner_size = p_size * (p_internal_margin / 100)
-		var inner_points = create_points(inner_size, p_inner_sides, p_inner_ratio, p_rotate, p_angle_degrees)
-		inner_points.reverse()
-		points.append_array(inner_points)
-
-	elif p_angle_degrees != 360:
-		points.append(Vector2.ZERO)
-
-	return points
-
-static func create_points(p_size: Vector2, p_sides: int, p_ratio: float = 100, p_rotate: float = 0, p_angle_degrees: float = 360) -> Array:
-	var points: Array[Vector2] = []
-	var angle_step = deg_to_rad(p_angle_degrees) / p_sides
-	var rotation_rad = deg_to_rad(p_rotate)
-
-	var count = p_sides + 1
-
-	for i in range(count):
-		var angle = i * angle_step + rotation_rad
-		var point = Vector2(cos(angle), sin(angle)) * p_size
-		points.append(point)
-
-		if p_ratio < 100 and i < count - 1:
-			var next_angle = (i + 1) * angle_step + rotation_rad
-			var dir1 = Vector2(cos(angle), sin(angle))
-			var dir2 = Vector2(cos(next_angle), sin(next_angle))
-			var mid_point = (dir1 + dir2) * 0.5 * (p_ratio / 100.0)
-			points.append(mid_point * p_size)
-	
-	return points
-
-static func get_area(points: PackedVector2Array) -> float:
-	var area := 0.0
-	var n = points.size()
-	
-	if n < 3:
-		return 0.0  # Не является многоугольником
-	
-	for i in range(n):
-		var j = (i + 1) % n
-		area += points[i].x * points[j].y
-		area -= points[j].x * points[i].y
-	
-	area = abs(area) * 0.5
-	
-	return area
+static func is_supported(node: Node) -> bool:
+	return node is Polygon2D or node is CollisionPolygon2D or \
+		   node is Line2D or node is CollisionShape2D or \
+		   node is LightOccluder2D or node is Path2D or \
+		   node is NavigationObstacle2D or node is NavigationRegion2D or \
+		   node is CPUParticles2D
