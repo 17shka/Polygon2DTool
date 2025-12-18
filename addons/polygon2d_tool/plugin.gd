@@ -1,7 +1,7 @@
 @tool
 extends EditorPlugin
 
-const SCRIPT = preload("uid://bd6ou7yl33fbn")
+const SCRIPT = preload("polygon_2d_tool.gd")
 const ICON = preload("icon.svg")
 var tool_instance = SCRIPT.new()
 
