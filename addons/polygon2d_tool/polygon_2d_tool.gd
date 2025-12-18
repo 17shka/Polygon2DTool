@@ -159,30 +159,30 @@ func update() -> void:
 
 static func bridge_polygons(p_ext: PackedVector2Array, p_int: PackedVector2Array) -> PackedVector2Array:
 	if p_ext.is_empty() or p_int.is_empty(): return p_ext
-	var first_pass_idx: int = 0
-	var min_dist_1: float = INF
-	for i in range(p_int.size()):
-		var d: float = p_ext[0].distance_squared_to(p_int[i])
-		if d < min_dist_1:
-			min_dist_1 = d
-			first_pass_idx = i
 	
 	var best_ext_idx: int = 0
-	var min_dist_2: float = INF
-	var target_int_p: Vector2 = p_int[first_pass_idx]
+	var best_int_idx: int = 0
+	var min_dist: float = INF
+
 	for i in range(p_ext.size()):
-		var d: float = target_int_p.distance_squared_to(p_ext[i])
-		if d < min_dist_2:
-			min_dist_2 = d
-			best_ext_idx = i
+		for j in range(p_int.size()):
+			var d: float = p_ext[i].distance_squared_to(p_int[j])
+			if d < min_dist:
+				min_dist = d
+				best_ext_idx = i
+				best_int_idx = j
 	
 	var res: PackedVector2Array = []
+
 	for i in range(p_ext.size()):
 		res.append(p_ext[(best_ext_idx + i) % p_ext.size()])
+
 	res.append(p_ext[best_ext_idx]) 
+
 	for i in range(p_int.size()):
-		res.append(p_int[(first_pass_idx + i) % p_int.size()])
-	res.append(p_int[first_pass_idx])
+		res.append(p_int[(best_int_idx + i) % p_int.size()])
+	res.append(p_int[best_int_idx])
+	
 	return res
 
 
