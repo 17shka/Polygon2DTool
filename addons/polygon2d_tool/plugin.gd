@@ -1,11 +1,11 @@
 @tool
 extends EditorPlugin
 
-const SCRIPT = preload("polygon_2d_tool.gd")
-const ICON = preload("icon.svg")
-var tool_instance = SCRIPT.new()
+const ICON := preload("icon.svg")
 
+var tool_instance := PolygonTool2D.new()
 var dock: EditorDock
+
 
 func _enter_tree() -> void:
 	EditorInterface.get_selection().selection_changed.connect(_on_selection_changed)
@@ -20,7 +20,7 @@ func _exit_tree() -> void:
 func add() -> void:
 	if not dock:
 		dock = EditorDock.new()
-		dock.default_slot = EditorPlugin.DOCK_SLOT_RIGHT_BL
+		dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BL
 		dock.title = "Polygon2DTool"
 		dock.dock_icon = ICON
 
@@ -43,9 +43,8 @@ func remove() -> void:
 
 
 func _on_selection_changed() -> void:
-	var selection := EditorInterface.get_selection().get_selected_nodes()
 	var target: Array[Node2D]
-	for node in selection:
+	for node in EditorInterface.get_selection().get_selected_nodes():
 		if PolygonTool2D.is_supported(node):
 			target.append(node)
 	if target:

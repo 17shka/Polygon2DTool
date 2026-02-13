@@ -113,7 +113,7 @@ func _validate_property(property: Dictionary) -> void:
 	if type == Type.RECTANGLE:
 		if property.name in ["sides", "angle_degrees", "ratio", "internal_sides", "internal_ratio"]:
 			property.usage = PROPERTY_USAGE_NO_EDITOR
-	
+
 	if (sync_internal_params or auto_params) and property.name == "internal_sides":
 		property.usage = PROPERTY_USAGE_NO_EDITOR
 	if sync_internal_params and property.name in ["internal_ratio", "internal_rotate", "internal_rounding_quality"]:
@@ -123,45 +123,43 @@ func _validate_property(property: Dictionary) -> void:
 
 
 func update() -> void:
-	var margin_factor: float = internal_margin / 100.0
+	var margin_factor: float = internal_margin / 100
 	var actual_int_rot: float = rotate if sync_internal_params else internal_rotate
-	
-	var r_ext: float = rounding if enable_rounding else 0.0
-	var r_int: float = 0.0
+
+	var r_ext: float = rounding if enable_rounding else 0
+	var r_int: float = 0
 	var q_int: int = internal_rounding_quality
-	
+
 	if enable_internal_rounding:
 		if auto_params:
 			r_int = r_ext * margin_factor
-			q_int = max(2, int(rounding_quality * margin_factor))
+			q_int = maxi(2, int(rounding_quality * margin_factor))
 		elif sync_internal_params:
 			r_int = r_ext
 			q_int = rounding_quality
 		else:
 			r_int = internal_rounding
-	
+
 	# Расчет сторон
 	var actual_int_sides: int = internal_sides
 	if auto_params:
-		actual_int_sides = max(3, int(sides * margin_factor))
+		actual_int_sides = maxi(3, int(sides * margin_factor))
 	elif sync_internal_params:
 		actual_int_sides = sides
-		
-	var actual_int_ratio: float = ratio if sync_internal_params else internal_ratio
-	
+
 	var points: PackedVector2Array
 	if type == Type.RECTANGLE:
 		points = create_rectangle_complex(size, rotate, actual_int_rot, r_ext, rounding_quality, internal_margin, r_int, q_int, enable_internal)
 	else:
-		points = create_polygon(size, sides, actual_int_sides, angle_degrees, ratio, actual_int_ratio, internal_margin, rotate, actual_int_rot, r_ext, rounding_quality, r_int, q_int, enable_internal)
+		points = create_polygon(size, sides, actual_int_sides, angle_degrees, ratio, ratio if sync_internal_params else internal_ratio, internal_margin, rotate, actual_int_rot, r_ext, rounding_quality, r_int, q_int, enable_internal)
 	update_polygon(target, points)
 
 
 static func bridge_polygons(p_ext: PackedVector2Array, p_int: PackedVector2Array) -> PackedVector2Array:
 	if p_ext.is_empty() or p_int.is_empty(): return p_ext
-	
-	var best_ext_idx: int = 0
-	var best_int_idx: int = 0
+
+	var best_ext_idx: int
+	var best_int_idx: int
 	var min_dist: float = INF
 
 	for i in range(p_ext.size()):
@@ -171,29 +169,30 @@ static func bridge_polygons(p_ext: PackedVector2Array, p_int: PackedVector2Array
 				min_dist = d
 				best_ext_idx = i
 				best_int_idx = j
-	
-	var res: PackedVector2Array = []
+
+	var res: PackedVector2Array
 
 	for i in range(p_ext.size()):
 		res.append(p_ext[(best_ext_idx + i) % p_ext.size()])
 
-	res.append(p_ext[best_ext_idx]) 
+	res.append(p_ext[best_ext_idx])
 
 	for i in range(p_int.size()):
 		res.append(p_int[(best_int_idx + i) % p_int.size()])
 	res.append(p_int[best_int_idx])
-	
+
 	return res
 
 
 static func create_rectangle_complex(p_size: Vector2, p_rotate: float, p_int_rotate: float, p_rounding: float, p_quality: int, p_margin: float, p_int_rounding: float, p_int_quality: int, p_use_internal: bool) -> PackedVector2Array:
-	var half: Vector2 = p_size / 2.0
-	var ext_raw: PackedVector2Array = [Vector2(-half.x, -half.y), Vector2(half.x, -half.y), Vector2(half.x, half.y), Vector2(-half.x, half.y)]
-	var ext_rounded: PackedVector2Array = apply_rounding(ext_raw, p_rounding, p_quality, true)
+	var half: Vector2 = p_size / 2
+	var ext_rounded: PackedVector2Array = apply_rounding(
+		[Vector2(-half.x, -half.y), Vector2(half.x, -half.y), Vector2(half.x, half.y), Vector2(-half.x, half.y)],
+		p_rounding, p_quality, true)
 	for i in range(ext_rounded.size()): ext_rounded[i] = ext_rounded[i].rotated(p_rotate)
-	
+
 	if p_use_internal and p_margin > 0:
-		var i_half: Vector2 = half * (p_margin / 100.0)
+		var i_half: Vector2 = half * (p_margin / 100)
 		var int_raw: PackedVector2Array = [Vector2(-i_half.x, -i_half.y), Vector2(i_half.x, -i_half.y), Vector2(i_half.x, i_half.y), Vector2(-i_half.x, i_half.y)]
 		int_raw.reverse()
 		var int_rounded: PackedVector2Array = apply_rounding(int_raw, p_int_rounding, p_int_quality, true)
@@ -203,12 +202,13 @@ static func create_rectangle_complex(p_size: Vector2, p_rotate: float, p_int_rot
 
 
 static func create_polygon(p_size: Vector2, p_ext_sides: int, p_int_sides: int, p_angle: float, p_ratio: float, p_int_ratio: float, p_margin: float, p_rotate: float, p_int_rotate: float, p_rounding: float, p_quality: int, p_int_rounding: float, p_int_quality: int, p_use_internal: bool) -> PackedVector2Array:
-	var is_closed: bool = p_angle >= 360.0
-	var ext_raw: PackedVector2Array = create_raw_points(p_size, p_ext_sides, p_ratio, p_angle, p_rotate)
-	var ext_rounded: PackedVector2Array = apply_rounding(ext_raw, p_rounding, p_quality, is_closed)
-	
+	var is_closed: bool = p_angle >= 360
+	var ext_rounded: PackedVector2Array = apply_rounding(
+		create_raw_points(p_size, p_ext_sides, p_ratio, p_angle, p_rotate),
+		 p_rounding, p_quality, is_closed)
+
 	if p_use_internal and p_margin > 0:
-		var int_raw: PackedVector2Array = create_raw_points(p_size * (p_margin / 100.0), p_int_sides, p_int_ratio, p_angle, p_int_rotate)
+		var int_raw: PackedVector2Array = create_raw_points(p_size * (p_margin / 100), p_int_sides, p_int_ratio, p_angle, p_int_rotate)
 		int_raw.reverse()
 		var int_rounded: PackedVector2Array = apply_rounding(int_raw, p_int_rounding, p_int_quality, is_closed)
 		if is_closed: return bridge_polygons(ext_rounded, int_rounded)
@@ -236,7 +236,7 @@ static func create_raw_points(p_size: Vector2, p_sides: int, p_ratio: float, p_a
 
 static func apply_rounding(p_points: PackedVector2Array, p_radius: float, p_quality: int, p_closed: bool) -> PackedVector2Array:
 	if p_radius <= 0 or p_points.size() < 3: return p_points
-	var result: PackedVector2Array = []
+	var result: PackedVector2Array
 	var l: int = p_points.size()
 	for i in range(l):
 		var p2: Vector2 = p_points[i]
@@ -248,17 +248,15 @@ static func apply_rounding(p_points: PackedVector2Array, p_radius: float, p_qual
 		var v1: Vector2 = (p1 - p2).normalized()
 		var v2: Vector2 = (p3 - p2).normalized()
 		var angle: float = v1.angle_to(v2)
-		if abs(angle) < 0.001 or abs(abs(angle) - PI) < 0.001:
+		if absf(angle) < 0.001 or absf(absf(angle) - PI) < 0.001:
 			result.append(p2)
 			continue
-		var half_angle: float = abs(angle) / 2.0
-		var max_dist: float = min(p2.distance_to(p1), p2.distance_to(p3)) * 0.49
-		var actual_radius: float = min(p_radius, max_dist * tan(half_angle))
+		var half_angle: float = absf(angle) / 2.0
+		var actual_radius: float = minf(p_radius, minf(p2.distance_to(p1), p2.distance_to(p3)) * 0.49 * tan(half_angle))
 		var needed_dist: float = actual_radius / tan(half_angle)
 		var center: Vector2 = p2 + (v1 + v2).normalized() * (actual_radius / sin(half_angle))
 		var start_a: float = (p2 + v1 * needed_dist - center).angle()
-		var end_a: float = (p2 + v2 * needed_dist - center).angle()
-		var diff: float = fposmod(end_a - start_a + PI, TAU) - PI
+		var diff: float = fposmod((p2 + v2 * needed_dist - center).angle() - start_a + PI, TAU) - PI
 		for j in range(p_quality + 1):
 			var a: float = start_a + diff * (float(j) / p_quality)
 			result.append(center + Vector2(cos(a), sin(a)) * actual_radius)
